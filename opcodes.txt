@@ -1,0 +1,8 @@
+00 - add
+01 - sub
+02 - mul
+03 - div
+04 - mod
+05 - pow
+06 - push int [4 bytes]
+07 - push float [4 bytes]
