@@ -26,6 +26,7 @@ type
     constructor Create;
     destructor Destroy; override;
 
+    procedure Pop;
     function PeekType: Byte;
     function PopInt: Integer;
     function PopFloat: Single;
@@ -46,6 +47,11 @@ end;
 destructor TStack.Destroy;
 begin
   inherited Destroy;
+end;
+
+procedure TStack.Pop;
+begin
+  TopDown;
 end;
 
 procedure TStack.Resize;

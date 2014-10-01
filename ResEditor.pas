@@ -40,15 +40,15 @@ end;
 function TResourceEditor.Load (Section: String; ResId: Integer): Pointer;
 var mHnd, resHnd: HWND;
 begin
-  mHnd := GetModuleHandle(PAnsiChar(ParamStr(0)));
+  mHnd := GetModuleHandle(PAnsiChar(FFile));
   resHnd := FindResource(mHnd, MAKEINTRESOURCE(ResId), PAnsiChar(Section));
-  Result := Pointer(LoadResource(mHnd, resHnd));
+  Result := LockResource(resHnd);
 end;
 
 function TResourceEditor.Size (Section: String; ResId: Integer): Cardinal;
 var mHnd, resHnd: HWND;
 begin
-  mHnd := GetModuleHandle(PAnsiChar(ParamStr(0)));
+  mHnd := GetModuleHandle(PAnsiChar(FFile));
   resHnd := FindResource(mHnd, MAKEINTRESOURCE(ResId), PAnsiChar(Section));
   Result := SizeofResource(mHnd, resHnd);
 end;
