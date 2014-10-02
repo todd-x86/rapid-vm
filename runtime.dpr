@@ -5,9 +5,13 @@ uses
   Dialogs,
   SysUtils,
   Math,
+  Windows,
+  Classes,
+  Contnrs,
   StackUnit in 'StackUnit.pas',
   ResEditor in 'ResEditor.pas',
-  FMath in 'FMath.pas';
+  FMath in 'FMath.pas',
+  Structs in 'Structs.pas';
 
 {$R *.res}
 
@@ -21,10 +25,15 @@ var
   stack: TStack;
   rc: TResourceEditor;
   text, startptr, endptr: PByte;
+  stringptr: PByte;  // string table
+  procptrs: TObjectList;   // external DLL proc table
+
+  tmpProcPtr: TProcPtr;
 
 begin
   // Init
   stack := TStack.Create;
+  procptrs := TObjectList.Create(True);
 
   // Load bytecode resource (i.e. "CODE" resource 101)
   rc := TResourceEditor.Create(ParamStr(0));
@@ -33,6 +42,12 @@ begin
     ShowMessage('Runtime does not contain runnable code');
     Exit;
   end;
+
+  // Load string table ('\0' separated)
+  stringptr := rc.Load('CODE', 102);
+
+  // TODO: Load proc table from resource
+
   startptr := text;
   endptr := PByte(Cardinal(text) + rc.Size('CODE', 101));
 
@@ -48,6 +63,8 @@ begin
           stack.PushInt(stack.PopInt + stack.PopInt);
         end else if stack.PeekType = 1 then begin
           stack.PushFloat(stack.PopFloat + stack.PopFloat);
+        end else if stack.PeekType = 3 then begin
+          stack.PushAddr(stack.PopAddr + stack.PopAddr);
         end;
       end;
       $01:
@@ -58,6 +75,8 @@ begin
           stack.PushInt(stack.PopInt - stack.PopInt);
         end else if stack.PeekType = 1 then begin
           stack.PushFloat(stack.PopFloat - stack.PopFloat);
+        end else if stack.PeekType = 3 then begin
+          stack.PushAddr(stack.PopAddr - stack.PopAddr);
         end;
       end;
       $02:
@@ -307,6 +326,60 @@ begin
         // f2i
         Inc(text);
         stack.PushInt(Trunc(stack.PopFloat));
+      end;
+      $17:
+      begin
+        // push [str-addr] -- note absolute address in string table
+        Inc(text);
+        stack.PushStr(PChar(Cardinal(stringptr)+PCardinal(text)^));
+        Inc(text, Sizeof(Cardinal));
+      end;
+      $18:
+      begin
+        // lib
+        Inc(text);
+        stack.PushAddr(LoadLibrary(stack.PopStr));
+      end;
+      $19:
+      begin
+        // unlib
+        Inc(text);
+        FreeLibrary(stack.PopAddr);
+      end;
+      $1A:
+      begin
+        // proc
+        // STACK: [DLL handle][ProcName][ParamCount]
+        // NOTE: Stack untouched
+        Inc(text);
+        stack.Freeze;
+        // Add it to the proc pointer table and return the index
+        // NOTE: This allows dynamic addresses to be stored locally
+        tmpProcPtr := TProcPtr.Create;
+        tmpProcPtr.ProcAddr := GetProcAddress(stack.PopAddr, stack.PopStr);
+        tmpProcPtr.ParamCount := stack.PopInt;
+        stack.PushAddr(Cardinal(procptrs.Add(tmpProcPtr)));
+
+        stack.Unfreeze;
+      end;
+      $1B:
+      begin
+        // invoke - Proc handles only
+        Inc(text);
+        tmpProcPtr := procptrs[stack.PopInt] as TProcPtr;
+        asm
+          mov ecx, dword[tmpProcPtr.ParamCount]
+        @_param_count_test:
+          cmp ecx, 0
+          jz @_invoke
+          // TODO: call PopRaw and push to stack
+
+          jmp @_param_count_test
+        @_invoke:
+          call [tmpProcPtr.ProcAddr]
+          // TODO: mov eax onto stack
+
+        end;
       end;
     end;
   end;

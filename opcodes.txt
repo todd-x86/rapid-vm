@@ -21,3 +21,8 @@
 14 - jge addr [4 bytes]
 15 - i2f
 16 - f2i
+17 - string load
+18 - dll load
+19 - dll unload
+1A - get proc address
+1B - invoke proc
