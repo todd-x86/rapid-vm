@@ -1,0 +1,4 @@
+window create, @frm1
+window create, @frm2
+window create, @frm3
+window create, @frm4
