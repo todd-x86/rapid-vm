@@ -1,0 +1,18 @@
+window_create @Form1
+window_set_title @Form1, "Title 0"
+int_create @Counter
+int_set @Counter, 0
+button_create @Btn1
+button_set_parent @Btn1, @Form1
+button_set_text @Btn1, "Click ME!"
+button_set_onclick @Btn1, @ClickMe
+app_run @Form1
+
+
+:ClickMe
+int_add @Counter, 1
+string_create @tmp, "Title "
+convert_int_string @Counter, @Counter_str
+string_concat @tmp, @Counter_str
+window_set_title @Form1, @Counter_str
+return

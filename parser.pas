@@ -5,7 +5,16 @@ interface
 uses Classes, SysUtils;
 
 type
-  TToken = (tkWindow, tkCreate, tkComma, tkID, tkInteger, tkEOL, tkUnknown);
+  TToken = (tkWindowCreate, tkWindowSetTitle,
+            tkIntCreate, tkIntAdd, tkIntSet,
+            tkBtnCreate, tkBtnSetParent, tkBtnSetText, tkBtnSetOnClick,
+            tkStrCreate, tkStrConcat,
+            tkConvertIntStr,
+            tkAppRun,
+            tkInteger, tkString,
+            tkReturn,
+            tkComma, tkColon, tkID, tkKeyword,
+            tkEOL, tkUnknown);
 
   TParser = class(TObject)
   private
@@ -18,6 +27,9 @@ type
     procedure ReadAlpha;
     procedure ReadInteger;
   public
+    property Offset: Integer read FLast;
+    property Current: Integer read FPos;
+
     constructor Create;
     procedure SetLine (const Line: String);
     function Next: TToken;
@@ -81,9 +93,27 @@ var kw: String;
 begin
   ReadAlpha;
   kw := Lowercase(Keyword);
-  if kw = 'window' then Result := tkWindow
-  else if kw = 'create' then Result := tkCreate
-  else Result := tkUnknown;
+  { Window }
+  if kw = 'window_create' then Result := tkWindowCreate
+  else if kw = 'window_set_title' then Result := tkWindowSetTitle
+  { Int }
+  else if kw = 'int_create' then Result := tkIntCreate
+  else if kw = 'int_add' then Result := tkIntAdd
+  else if kw = 'int_set' then Result := tkIntSet
+  { Button }
+  else if kw = 'button_create' then Result := tkBtnCreate
+  else if kw = 'button_set_parent' then Result := tkBtnSetParent
+  else if kw = 'button_set_text' then Result := tkBtnSetText
+  else if kw = 'button_set_onclick' then Result := tkBtnSetOnClick
+  { String }
+  else if kw = 'string_create' then Result := tkStrCreate
+  else if kw = 'string_concat' then Result := tkStrConcat
+  { Convert }
+  else if kw = 'convert_int_string' then Result := tkConvertIntStr
+  { App }
+  else if kw = 'app_run' then Result := tkAppRun
+  else if kw = 'return' then Result := tkReturn
+  else Result := tkKeyword;
 end;
 
 function TParser.ParseNumeric: TToken;
@@ -110,6 +140,21 @@ begin
     begin
       Inc(FPos);
       Result := tkEOL;
+    end;                                        
+    ':':
+    begin
+      Inc(FPos);
+      Result := tkColon;
+    end;
+    '"':
+    begin
+      Inc(FPos);
+      while (FPos <= Length(FLine)) and (FLine[FPos] <> '"') do begin
+        if (FLine[FPos] = '\') then Inc(FPos);
+        Inc(FPos);
+      end;
+      Inc(FPos);
+      Result := tkString;
     end;
     else begin
       Inc(FPos);

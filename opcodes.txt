@@ -1,0 +1,24 @@
+[Type indicator]
+00 NN NN NN NN = Identifier + VarIndex
+01 NN NN NN NN = Int + Value
+02 NN NN NN NN = String + StrIndex
+
+[Opcodes]
+00	window_create <ID>
+01	window_set_title <ID>, <STR>
+02	int_create <ID>
+03	int_add <ID>, <INT>
+04	int_set <ID>, <INT>
+05	button_create <ID>
+06	button_set_parent <ID>, <ID>
+07	button_set_text <ID>, <STR>
+08	button_set_onclick <ID>, <LABEL>
+09	string_create <ID>, <STR>
+0A	string_concat <ID>, <STR>
+0B	convert_int_string <INT>, <ID>
+0C	app_run <ID>
+0D	return
+
+[Resources]
+00	__string_load__ <len> <bytes>
+01	__label_translate__ <pos>
