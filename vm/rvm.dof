@@ -100,7 +100,7 @@ Conditionals=
 DebugSourceDirs=
 UsePackages=0
 [Parameters]
-RunParams=..\s1.b
+RunParams=..\s_granular.b
 HostApplication=
 Launcher=
 UseLauncher=0

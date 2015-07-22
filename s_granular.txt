@@ -14,5 +14,5 @@ int_add @Counter, 1
 string_create @tmp, "Title "
 convert_int_string @Counter, @Counter_str
 string_concat @tmp, @Counter_str
-window_set_title @Form1, @Counter_str
+window_set_title @Form1, @tmp
 return

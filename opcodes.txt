@@ -1,7 +1,7 @@
 [Type indicator]
 00 NN NN NN NN = Identifier + VarIndex
 01 NN NN NN NN = Int + Value
-02 NN NN NN NN = String + StrIndex
+02 NN NN NN NN = String Constant (from resource) + StrIndex
 
 [Opcodes]
 00	window_create <ID>
@@ -21,4 +21,4 @@
 
 [Resources]
 00	__string_load__ <len> <bytes>
-01	__label_translate__ <pos>
+01	__label_translate__ <id-index> <opcode-pos>

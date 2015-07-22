@@ -12,7 +12,7 @@ type
   TLabelOffset = class(TObject)
   public
     Name: String;
-    Offset: Cardinal;
+    Ident, Offset: Cardinal;
     constructor Create(const Name: String; const Offset: Cardinal);
   end;
 
@@ -73,10 +73,25 @@ begin
 end;
 
 procedure WriteMetadata;
-var ResOffset, j: Integer;
+var tmpLoc, ResOffset, j: Integer;
 begin
   ResOffset := AsmOffset;
 
+  // Precompute label identifiers in table
+  // TODO: Remove this and just make second pass
+  j := 0;
+  while j < Labels.Count do begin
+    tmpLoc := Idents.IndexOf((Labels[j] as TLabelOffset).Name);
+    if tmpLoc < 0 then begin
+      // If the label is never identified, remove it from output
+      Labels.Delete(j);
+    end else begin
+      (Labels[j] as TLabelOffset).Ident := tmpLoc;
+      Inc(j);
+    end;
+  end;
+
+  // -- RESOURCES BEGIN --
   // Write # of identifiers (VM metadata)
   AsmCardinal(Idents.Count);
   // Write all strings
@@ -87,6 +102,7 @@ begin
   for j := 0 to Labels.Count-1 do begin
     AsmLabelRes(Labels[j] as TLabelOffset);
   end;
+  // -- RESOURCES END --
 
   // NOTE: IMPORTANT
   // Write ending marker for splitting opcode and resource sections
@@ -181,6 +197,7 @@ end;
 procedure AsmLabelRes(const Lbl: TLabelOffset);
 begin
   AsmByte($01);
+  AsmCardinal(Lbl.Ident);
   AsmCardinal(Lbl.Offset);
 end;
 
